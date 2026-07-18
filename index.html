@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ===== VARIABLES Y RESET ===== */
+    :root {
+      --red: #E31D2B;
+      --dark: #1e293b;
+      --bg: #f1f5f9;
+      --font-size-base: 16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #1e293b;
+      font-size: var(--font-size-base);
+      overflow-x: hidden;
+      padding-bottom: 80px;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      background: var(--dark);
+      min-height: 100vh;
+      position: fixed;
+      width: 280px;
+      z-index: 1000;
+      transition: 0.3s;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      padding-top: 10px;
+      overflow-y: auto;
+    }
+    .sidebar .nav-link {
+      color: #94a3b8;
+      padding: 14px 20px;
+      margin: 4px 12px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      transition: 0.3s;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      gap: 14px;
+      font-size: 1.1rem;
+    }
+    .sidebar .nav-link:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .sidebar .nav-link.active { background: var(--red); color: #fff; box-shadow: 0 4px 12px rgba(227,29,43,0.3); }
+    .sidebar .nav-link i { font-size: 1.4rem; width: 28px; text-align: center; }
+    .sidebar .brand { padding: 16px 20px 8px 20px; }
+    .sidebar .brand h5 { font-size: 1.3rem; }
+    .main {
+      margin-left: 280px;
+      padding: 16px 20px 100px 20px;
+      transition: 0.3s;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+      .sidebar { width: 80px; }
+      .sidebar .nav-link span { display: none; }
+      .sidebar .nav-link { padding: 14px; justify-content: center; margin: 4px 8px; }
+      .sidebar .nav-link i { font-size: 1.6rem; width: auto; }
+      .sidebar .brand h5 { display: none; }
+      .main { margin-left: 80px; padding: 12px; }
+    }
+    @media (max-width: 576px) {
+      .sidebar {
+        width: 100%;
+        min-height: auto;
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 6px 0;
+        z-index: 999;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+        border-radius: 20px 20px 0 0;
+        height: 70px;
+        display: flex;
+        align-items: center;
+      }
+      .sidebar .brand { display: none; }
+      .sidebar .nav {
+        flex-direction: row !important;
+        flex-wrap: nowrap;
+        width: 100%;
+        justify-content: space-around;
+        padding: 0 4px;
+      }
+      .sidebar .nav-link {
+        margin: 0 2px;
+        padding: 8px 12px;
+        font-size: 0.7rem;
+        flex-direction: column;
+        gap: 2px;
+        border-radius: 12px;
+        min-width: 50px;
+      }
+      .sidebar .nav-link i { font-size: 1.2rem; width: auto; margin: 0; }
+      .sidebar .nav-link span { display: block; font-size: 0.55rem; }
+      .main {
+        margin-left: 0;
+        padding: 12px 12px 90px 12px;
+      }
+      .card-pro { padding: 16px; border-radius: 16px; margin-bottom: 16px; }
+      .form-control, .form-select { font-size: 1rem; padding: 12px 14px; }
+      .btn { font-size: 1rem; padding: 12px 16px; border-radius: 12px; }
+      .btn-sm { font-size: 0.8rem; padding: 6px 10px; }
+      .table { font-size: 0.75rem; }
+      .table th, .table td { padding: 6px 4px; }
+      .metric-card .number { font-size: 1.6rem; }
+      .metric-card .label { font-size: 0.65rem; }
+      .chart-container { height: 160px; }
+      .calendario-grid { font-size: 0.55rem; min-width: auto; grid-template-columns: 45px repeat(7, 1fr); gap: 2px; }
+      .calendario-dia { font-size: 0.5rem; border-radius: 3px; }
+      .calendario-header { font-size: 0.55rem; padding: 2px; }
+      .modal-dialog { margin: 8px; }
+      .modal-content { border-radius: 16px; }
+      .modal-body { padding: 16px; }
+      .modal-header { padding: 16px 16px 0 16px; }
+      .modal-footer { padding: 0 16px 16px 16px; }
+      .filter-group .btn-filter { font-size: 0.7rem; padding: 4px 10px; }
+      .ticket-item { padding: 10px 12px; }
+      .ticket-item .badge { font-size: 0.65rem; }
+      .estado-badge { font-size: 0.6rem; padding: 3px 8px; }
+      .badge-area { font-size: 0.55rem; padding: 2px 6px; }
+      #loader h5 { font-size: 1rem; }
+    }
+
+    /* ===== COMPONENTES ===== */
+    .card-pro {
+      background: #fff;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: 0.2s;
+    }
+    .card-pro:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+    .btn-red { background: var(--red); color: #fff; border: none; transition: 0.2s; }
+    .btn-red:hover { background: #b71c1c; color: #fff; transform: scale(1.02); }
+    .btn-outline-red { border: 2px solid var(--red); color: var(--red); background: transparent; }
+    .btn-outline-red:hover { background: var(--red); color: #fff; }
+    .btn-success { background: #22c55e; border: none; }
+    .btn-success:hover { background: #16a34a; }
+    .btn-warning { background: #f59e0b; border: none; color: #000; }
+    .btn-warning:hover { background: #d97706; }
+
+    .estado-badge {
+      font-size: 0.7rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .estado-ABIERTA { background: #fbbf24; color: #000; }
+    .estado-EN_PROGRESO { background: #3b82f6; color: #fff; }
+    .estado-COMPLETADA { background: #22c55e; color: #fff; }
+    .estado-EN_ESPERA { background: #8b5cf6; color: #fff; }
+    .estado-CERRADO { background: #6b7280; color: #fff; }
+    .estado-NUEVA { background: #f43f5e; color: #fff; }
+    .estado-REVISADA { background: #14b8a6; color: #fff; }
+    .estado-EN PROCESO { background: #3b82f6; color: #fff; }
+
+    .badge-area { font-size: 0.6rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+    .badge-area.MECANICA { background: #3b82f6; color: #fff; }
+    .badge-area.ELECTRICO { background: #f59e0b; color: #000; }
+    .badge-area.CARROCERIA { background: #8b5cf6; color: #fff; }
+    .badge-area.URF { background: #ec4899; color: #fff; }
+
+    .ticket-item {
+      cursor: pointer;
+      border: 1px solid #eef2f6;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: 0.2s;
+      background: #fff;
+      position: relative;
+    }
+    .ticket-item:hover { border-color: var(--red); background: #fff5f6; transform: translateX(4px); }
+    .ticket-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--red);
+      border-radius: 0 4px 4px 0;
+      opacity: 0;
+      transition: 0.2s;
+    }
+    .ticket-item:hover::before { opacity: 1; }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .filter-group .btn-filter {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      color: #475569;
+      transition: 0.2s;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .filter-group .btn-filter.active {
+      background: var(--red);
+      color: #fff;
+      border-color: var(--red);
+    }
+    .filter-group .btn-filter:hover { border-color: var(--red); }
+
+    .metric-card {
+      text-align: center;
+      padding: 16px 10px;
+      border-radius: 16px;
+      background: #f8fafc;
+      height: 100%;
+    }
+    .metric-card .number { font-size: 2rem; font-weight: 700; }
+    .metric-card .label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-card .icon { font-size: 1.5rem; margin-bottom: 4px; }
+    .bg-soft-red { background: #fef2f2; }
+    .bg-soft-green { background: #f0fdf4; }
+    .bg-soft-blue { background: #eff6ff; }
+    .bg-soft-yellow { background: #fefce8; }
+    .text-red { color: #dc2626; }
+    .text-green { color: #16a34a; }
+    .text-blue { color: #2563eb; }
+    .text-yellow { color: #ca8a04; }
+
+    .chart-container { position: relative; height: 200px; width: 100%; }
+
+    /* Calendario */
+    .calendario-grid {
+      display: grid;
+      grid-template-columns: 70px repeat(7, 1fr);
+      gap: 3px;
+      font-size: 0.7rem;
+      min-width: 500px;
+    }
+    .calendario-header {
+      font-weight: 700;
+      text-align: center;
+      padding: 6px 2px;
+      background: #f1f5f9;
+      border-radius: 6px;
+    }
+    .calendario-fila { display: contents; }
+    .calendario-fila .placa-cell {
+      font-weight: 600;
+      padding: 6px 2px;
+      background: #f8fafc;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.65rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .calendario-dia {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      aspect-ratio: 1/1;
+      border-radius: 6px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      transition: 0.15s;
+      cursor: default;
+      border: 1px solid transparent;
+    }
+    .calendario-dia.disponible { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .calendario-dia.no-disponible { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+    .calendario-dia.sin-registro { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
+    .calendario-dia:hover { transform: scale(1.1); z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .calendario-leyenda {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-radius: 12px;
+    }
+    .calendario-leyenda span { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; }
+    .calendario-leyenda .dot { width: 16px; height: 16px; border-radius: 4px; display: inline-block; border: 1px solid #cbd5e1; }
+    .dot-disponible { background: #dcfce7; border-color: #86efac; }
+    .dot-no-disponible { background: #fee2e2; border-color: #fca5a5; }
+    .dot-sin-registro { background: #f1f5f9; border-color: #e2e8f0; }
+
+    .historico-container { max-height: 250px; overflow-y: auto; }
+    .file-upload-wrapper { position: relative; }
+    .file-upload-wrapper input[type="file"] {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    .file-upload-wrapper .btn { width: 100%; }
+    #file-status { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+
+    /* Modal */
+    .modal-content { border-radius: 24px; border: none; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+    .modal-header { border-bottom: none; padding: 20px 20px 0 20px; }
+    .modal-body { padding: 20px; }
+    .modal-footer { border-top: none; padding: 0 20px 20px 20px; }
+
+    /* Loader */
+    #loader {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.92);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      backdrop-filter: blur(4px);
+    }
+    #loader .spinner-border { width: 3rem; height: 3rem; }
+
+    /* Utilidades */
+    .page-section { animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .w-100 { width: 100%; }
+    .text-muted { color: #64748b; }
+    .fw-bold { font-weight: 700; }
+    .mb-2 { margin-bottom: 8px; }
+    .mb-3 { margin-bottom: 16px; }
+    .mb-4 { margin-bottom: 24px; }
+    .mt-2 { margin-top: 8px; }
+    .mt-3 { margin-top: 16px; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 16px; }
+    .d-flex { display: flex; }
+    .flex-wrap { flex-wrap: wrap; }
+    .align-items-center { align-items: center; }
+    .justify-content-between { justify-content: space-between; }
+    .justify-content-center { justify-content: center; }
+    .text-center { text-align: center; }
+    .text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .table-responsive { overflow-x: auto; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { padding: 8px 6px; vertical-align: middle; border-bottom: 1px solid #eef2f6; }
+    .table thead th { background: #f8fafc; font-weight: 600; color: #475569; border-bottom-width: 2px; }
+    .table-hover tbody tr:hover { background-color: #fef2f2; cursor: default; }
+    .suggest-item {
+      padding: 8px 12px;
+      border-bottom: 1px solid #eef2f6;
+      cursor: pointer;
+    }
+    .suggest-item:hover { background: #f1f5f9; }
+  </style>
+</head>
+<body>
+  <div id="loader"><div class="spinner-border text-danger"></div><h5 class="mt-3 fw-bold text-secondary">Cargando...</h5></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="brand">
+      <h5 class="text-white fw-bold m-0"><i class="bi bi-truck me-2"></i>PLANIFICADOR</h5>
+      <small class="text-secondary fw-bold">TALLER V3.0</small>
+    </div>
+    <nav class="nav flex-column">
+      <a class="nav-link active" data-page="dashboard" href="#"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+      <a class="nav-link" data-page="nueva-solicitud" href="#"><i class="bi bi-plus-circle"></i><span>Nueva Solicitud</span></a>
+      <a class="nav-link" data-page="solicitudes" href="#"><i class="bi bi-clipboard"></i><span>Solicitudes</span></a>
+      <a class="nav-link" data-page="ordenes" href="#"><i class="bi bi-list-check"></i><span>Órdenes</span></a>
+      <a class="nav-link" data-page="disponibilidad" href="#"><i class="bi bi-calendar2-week"></i><span>Disponibilidad</span></a>
+      <a class="nav-link" data-page="preventivo" href="#"><i class="bi bi-calendar-check"></i><span>Preventivo</span></a>
+    </nav>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- ========== DASHBOARD ========== -->
+    <div id="page-dashboard" class="page-section">
+      <!-- Filtros de fecha -->
+      <div class="card-pro">
+        <div class="row g-2 align-items-end">
+          <div class="col-5">
+            <label class="form-label fw-bold small">Fecha Inicio</label>
+            <input type="date" id="dash-fecha-inicio" class="form-control">
+          </div>
+          <div class="col-5">
+            <label class="form-label fw-bold small">Fecha Fin</label>
+            <input type="date" id="dash-fecha-fin" class="form-control">
+          </div>
+          <div class="col-2">
+            <button class="btn btn-red w-100" onclick="cargarDashboard()"><i class="bi bi-arrow-clockwise"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Métricas básicas -->
+      <div class="row g-2 g-md-3 mb-3">
+        <div class="col-6 col-md-3"><div class="metric-card bg-soft-red"><div class="icon text-red"><i class="bi bi-truck"></i></div><div class="number text-red" id="d-total">0</div><div class="label">Total Unidades</div></div></div>
+        <div class="col-6 col-md-3"><div class="metric-card bg-soft-yellow"><div class="icon text-yellow"><i class="bi bi-tools"></i></div><div class="number text-yellow" id="d-taller">0</div><div class="label">En Taller</div></div></div>
+        <div class="col-6 col-md-3"><div class="metric-card bg-soft-green"><div class="icon text-green"><i class="bi bi-check-circle"></i></div><div class="number text-green" id="d-disponibles">0</div><div class="label">Disponibles</div></div></div>
+        <div class="col-6 col-md-3"><div class="metric-card bg-soft-blue"><div class="icon text-blue"><i class="bi bi-calendar-check"></i></div><div class="number text-blue" id="d-preventivo">0</div><div class="label">Preventivos</div></div></div>
+      </div>
+
+      <!-- Métricas avanzadas (MTBF, MTTR, Disponibilidad) -->
+      <div class="row g-2 g-md-3 mb-3">
+        <div class="col-4"><div class="metric-card"><div class="icon text-primary"><i class="bi bi-clock-history"></i></div><div class="number text-primary" id="d-mtbf">0</div><div class="label">MTBF (horas)</div></div></div>
+        <div class="col-4"><div class="metric-card"><div class="icon text-warning"><i class="bi bi-wrench"></i></div><div class="number text-warning" id="d-mttr">0</div><div class="label">MTTR (horas)</div></div></div>
+        <div class="col-4"><div class="metric-card"><div class="icon text-success"><i class="bi bi-percent"></i></div><div class="number text-success" id="d-disponibilidad">0%</div><div class="label">Disponibilidad</div></div></div>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="row g-2 g-md-3">
+        <div class="col-12 col-md-4"><div class="card-pro"><h6 class="fw-bold mb-2 text-center">Estado de Unidades</h6><div class="chart-container"><canvas id="chartEstadoUnidades"></canvas></div></div></div>
+        <div class="col-12 col-md-4"><div class="card-pro"><h6 class="fw-bold mb-2 text-center">Solicitudes por Urgencia</h6><div class="chart-container"><canvas id="chartUrgencia"></canvas></div></div></div>
+        <div class="col-12 col-md-4"><div class="card-pro"><h6 class="fw-bold mb-2 text-center">Órdenes por Estado</h6><div class="chart-container"><canvas id="chartOrdenes"></canvas></div></div></div>
+      </div>
+
+      <!-- Tickets activos -->
+      <div class="card-pro mt-3">
+        <h5 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Solicitudes Activas</h5>
+        <div id="lista-tickets-dash"></div>
+      </div>
+    </div>
+
+    <!-- ========== NUEVA SOLICITUD ========== -->
+    <div id="page-nueva-solicitud" class="page-section" style="display:none;">
+      <div class="card-pro">
+        <h5 class="fw-bold mb-3"><i class="bi bi-plus-circle me-2 text-danger"></i>Registrar Solicitud</h5>
+        <form id="form-solicitud" onsubmit="return false;">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label fw-bold small">PLACA *</label>
+              <select id="ns-placa" class="form-select" required>
+                <option value="">-- Seleccionar --</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold small">CONDUCTOR (NOMBRE) *</label>
+              <select id="ns-conductor" class="form-select" required>
+                <option value="">-- Seleccionar --</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold small">RUTA</label>
+              <select id="ns-ruta" class="form-select">
+                <option value="">-- Seleccionar --</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-bold small">HORAS THERMO</label>
+              <input type="number" id="ns-horas" class="form-control" placeholder="0" step="0.5">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-bold small">KM REPORTE *</label>
+              <input type="number" id="ns-km" class="form-control" placeholder="0" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-bold small">URGENCIA *</label>
+              <select id="ns-urgencia" class="form-select" required>
+                <option value="ALTA">🔴 ALTA</option>
+                <option value="MEDIA" selected>🟡 MEDIA</option>
+                <option value="BAJA">🟢 BAJA</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-bold small">ÁREA *</label>
+              <select id="ns-area" class="form-select" required>
+                <option value="MECANICA">🔧 MECANICA</option>
+                <option value="CARROCERIA">🚗 CARROCERIA</option>
+                <option value="ELECTRICO">⚡ ELECTRICO</option>
+                <option value="URF">🧊 URF</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold small">DESCRIPCIÓN *</label>
+              <textarea id="ns-descripcion" class="form-control" rows="3" placeholder="Describa el problema..." required></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold small">FOTO</label>
+              <div class="file-upload-wrapper">
+                <button class="btn btn-outline-secondary w-100" onclick="document.getElementById('file-input').click()">
+                  <i class="bi bi-camera me-2"></i>Tomar foto / Seleccionar
+                </button>
+                <input type="file" id="file-input" accept="image/*" capture="environment" onchange="prepararSubidaArchivo()">
+              </div>
+              <div id="file-status" class="mt-1"></div>
+              <input type="hidden" id="ns-foto" value="">
+            </div>
+            <div class="col-12">
+              <button class="btn btn-red w-100 py-3" onclick="guardarSolicitud()">
+                <i class="bi bi-save me-2"></i>Guardar Solicitud
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========== SOLICITUDES (BANDEJA) ========== -->
+    <div id="page-solicitudes" class="page-section" style="display:none;">
+      <div class="card-pro">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold m-0"><i class="bi bi-clipboard me-2"></i>Bandeja de Solicitudes</h5>
+          <button class="btn btn-red btn-sm" onclick="cargarSolicitudes()">
+            <i class="bi bi-arrow-clockwise"></i> Actualizar
+          </button>
+        </div>
+        <!-- Filtros de Estado -->
+        <div class="filter-group">
+          <button class="btn-filter active" data-filter="all" onclick="filtrarSolicitudes('all')">Todas</button>
+          <button class="btn-filter" data-filter="NUEVA" onclick="filtrarSolicitudes('NUEVA')">Pendientes</button>
+          <button class="btn-filter" data-filter="REVISADA" onclick="filtrarSolicitudes('REVISADA')">Revisadas</button>
+          <button class="btn-filter" data-filter="EN PROCESO" onclick="filtrarSolicitudes('EN PROCESO')">En Proceso</button>
+          <button class="btn-filter" data-filter="CERRADO" onclick="filtrarSolicitudes('CERRADO')">Cerradas</button>
+        </div>
+        <!-- Filtros de Área -->
+        <div class="filter-group">
+          <button class="btn-filter active" data-filter-area="all" onclick="filtrarSolicitudesArea('all')">Todas Áreas</button>
+          <button class="btn-filter" data-filter-area="MECANICA" onclick="filtrarSolicitudesArea('MECANICA')">🔧 Mecánica</button>
+          <button class="btn-filter" data-filter-area="CARROCERIA" onclick="filtrarSolicitudesArea('CARROCERIA')">🚗 Carrocería</button>
+          <button class="btn-filter" data-filter-area="ELECTRICO" onclick="filtrarSolicitudesArea('ELECTRICO')">⚡ Eléctrico</button>
+          <button class="btn-filter" data-filter-area="URF" onclick="filtrarSolicitudesArea('URF')">🧊 URF</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Ticket</th>
+                <th>Fecha</th>
+                <th>Placa</th>
+                <th>Conductor</th>
+                <th>Ruta</th>
+                <th>Urgencia</th>
+                <th>Área</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-solicitudes"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== ÓRDENES ========== -->
+    <div id="page-ordenes" class="page-section" style="display:none;">
+      <div class="card-pro">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold m-0"><i class="bi bi-list-check me-2"></i>Órdenes de Trabajo</h5>
+          <button class="btn btn-red btn-sm" onclick="cargarOrdenes()"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr><th>Orden</th><th>Placa</th><th>Diagnóstico</th><th>Estado</th><th>Técnico</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tabla-ordenes"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== DISPONIBILIDAD ========== -->
+    <div id="page-disponibilidad" class="page-section" style="display:none;">
+      <div class="card-pro">
+        <h5 class="fw-bold mb-3"><i class="bi bi-calendar2-week me-2 text-danger"></i>Calendario de Disponibilidad</h5>
+        <div class="row g-2 mb-3">
+          <div class="col-6"><label class="form-label fw-bold small">Mes</label><select id="sel-mes" class="form-select" onchange="cargarCalendario()"><option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option></select></div>
+          <div class="col-4"><label class="form-label fw-bold small">Año</label><input type="number" id="sel-ano" class="form-control" value="2026" onchange="cargarCalendario()"></div>
+          <div class="col-2 d-flex align-items-end"><button class="btn btn-red w-100" onclick="cargarCalendario()"><i class="bi bi-calendar2-week"></i></button></div>
+        </div>
+        <div id="calendario-container"></div>
+        <div class="calendario-leyenda">
+          <span><span class="dot dot-disponible"></span> Disponible</span>
+          <span><span class="dot dot-no-disponible"></span> No disponible</span>
+          <span><span class="dot dot-sin-registro"></span> Sin registro</span>
+        </div>
+      </div>
+      <div class="card-pro">
+        <h5 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>Registrar Unidad NO Disponible</h5>
+        <div class="row g-2">
+          <div class="col-12"><label class="form-label fw-bold small">Placa</label><select id="baja-placa" class="form-select"></select></div>
+          <div class="col-6"><label class="form-label fw-bold small">Horas Termo</label><input type="number" id="baja-horas" class="form-control" value="0"></div>
+          <div class="col-6"><label class="form-label fw-bold small">Ubicación</label><input type="text" id="baja-ubicacion" class="form-control" placeholder="Taller"></div>
+          <div class="col-9"><label class="form-label fw-bold small">Motivo</label><input type="text" id="baja-motivo" class="form-control" placeholder="Mantenimiento"></div>
+          <div class="col-3 d-flex align-items-end"><button class="btn btn-danger w-100" onclick="registrarBaja()"><i class="bi bi-plus-circle"></i></button></div>
+        </div>
+      </div>
+      <div class="card-pro">
+        <h5 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>Historial</h5>
+        <div class="historico-container">
+          <table class="table table-hover align-middle table-sm">
+            <thead class="table-light"><tr><th>Fecha</th><th>Placa</th><th>Horas</th><th>Motivo</th></tr></thead>
+            <tbody id="tabla-historico"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm mt-2" onclick="cargarHistorico()"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+      </div>
+    </div>
+
+    <!-- ========== PREVENTIVO ========== -->
+    <div id="page-preventivo" class="page-section" style="display:none;">
+      <div class="card-pro">
+        <h5 class="fw-bold mb-3"><i class="bi bi-calendar-check me-2 text-danger"></i>Mantenimiento Preventivo</h5>
+        <p class="text-muted small">El sistema revisa el kilometraje y genera órdenes preventivas automáticamente.</p>
+        <button class="btn btn-red w-100 mb-3" onclick="ejecutarRevisionPreventiva()"><i class="bi bi-arrow-repeat me-2"></i>Revisar ahora</button>
+        <div id="preventivo-resultados"></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- ===================== MODALES ===================== -->
+
+  <!-- Modal Detalle Solicitud -->
+  <div class="modal fade" id="modalTicket" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold text-danger" id="mt_id"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center mb-3">
+            <h1 class="display-4 fw-bold m-0" id="mt_placa"></h1>
+            <span class="badge" id="mt_urgencia"></span>
+            <span class="badge badge-area" id="mt_area_badge"></span>
+          </div>
+          <div class="bg-light p-3 rounded-3 mb-3">
+            <label class="small text-muted fw-bold d-block mb-1">REPORTE:</label>
+            <p id="mt_falla" class="m-0 fw-bold"></p>
+          </div>
+          <div class="row small">
+            <div class="col-6"><small class="text-muted d-block">Fecha:</small><b id="mt_fecha"></b></div>
+            <div class="col-6"><small class="text-muted d-block">Antigüedad:</small><b id="mt_antiguedad"></b></div>
+          </div>
+          <div class="mt-2"><small class="text-muted d-block">Conductor:</small><b id="mt_conductor"></b></div>
+          <div class="mt-1"><small class="text-muted d-block">Ruta:</small><b id="mt_ruta"></b></div>
+          <div class="mt-2"><small class="text-muted d-block">Horas Thermo:</small><b id="mt_horas">0</b></div>
+          <div class="mt-2"><small class="text-muted d-block">Foto:</small><a href="#" id="mt_foto_link" target="_blank" class="text-primary">Ver foto</a></div>
+          <div class="mt-3"><small class="text-muted d-block">Estado:</small><span id="mt_estado" class="estado-badge estado-NUEVA">NUEVA</span></div>
+          <div class="mt-2"><small class="text-muted d-block">Orden vinculada:</small><b id="mt_id_orden">-</b></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-success w-100" id="btn-crear-orden" onclick="abrirModalRevisar()">
+            <i class="bi bi-pencil-square me-2"></i>Revisar y Crear Orden
+          </button>
+          <button class="btn btn-light w-100 mt-1" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Revisar y Crear Orden -->
+  <div class="modal fade" id="modalRevisar" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold text-danger">Revisar Solicitud</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="rev_id_solicitud">
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Diagnóstico Inicial *</label>
+            <textarea id="rev_diagnostico" class="form-control" rows="3" placeholder="Describe el diagnóstico..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Redireccionar Área</label>
+            <select id="rev_area" class="form-select">
+              <option value="MECANICA">🔧 MECANICA</option>
+              <option value="CARROCERIA">🚗 CARROCERIA</option>
+              <option value="ELECTRICO">⚡ ELECTRICO</option>
+              <option value="URF">🧊 URF</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Tipo Taller</label>
+            <select id="rev_tipo_taller" class="form-select">
+              <option value="INTERNO">INTERNO</option>
+              <option value="EXTERNO">EXTERNO</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Asignar Técnico *</label>
+            <select id="rev_tecnico" class="form-select">
+              <option value="">-- Seleccionar --</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-success" onclick="confirmarRevisarYCrearOrden()">
+            <i class="bi bi-check2-circle me-2"></i>Crear Orden
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Iniciar Sesión -->
+  <div class="modal fade" id="modalIniciarSesion" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold text-danger">Iniciar Sesión</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="is_id_orden">
+          <input type="hidden" id="is_id_tecnico">
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Descripción</label>
+            <textarea id="is_descripcion" class="form-control" rows="3" placeholder="Ej: Diagnóstico, cambio de frenos..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-success" onclick="confirmarIniciarSesion()"><i class="bi bi-play-fill me-2"></i>Iniciar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Finalizar Sesión -->
+  <div class="modal fade" id="modalFinalizarSesion" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold text-success">Finalizar Sesión</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="fs_id_registro">
+          <p class="mb-2">¿Finalizar esta sesión?</p>
+          <div class="bg-light p-3 rounded-3">
+            <small class="text-muted d-block">Tiempo transcurrido:</small>
+            <b id="fs_tiempo_transcurrido">--</b>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-success" onclick="confirmarFinalizarSesion()"><i class="bi bi-check2-circle me-2"></i>Finalizar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ================================================================
+    // GLOBALES
+    // ================================================================
+    let solicitudesData = [];
+    let ordenesData = [];
+    let tecnicosData = [];
+    let unidadesList = [];
+    let conductoresList = [];
+    let rutasList = [];
+    let currentTicketId = null;
+    let currentRegistroId = null;
+    let filtroActual = 'all';
+    let filtroAreaActual = 'all';
+    let chartEstadoUnidades = null;
+    let chartUrgencia = null;
+    let chartOrdenes = null;
+    let archivoSeleccionado = null;
+
+    const modalTicket = new bootstrap.Modal(document.getElementById('modalTicket'));
+    const modalRevisar = new bootstrap.Modal(document.getElementById('modalRevisar'));
+    const modalIniciarSesion = new bootstrap.Modal(document.getElementById('modalIniciarSesion'));
+    const modalFinalizarSesion = new bootstrap.Modal(document.getElementById('modalFinalizarSesion'));
+
+    function formatoFecha(f) {
+      if (!f) return '-';
+      const d = new Date(f);
+      if (isNaN(d)) return '-';
+      return d.toLocaleDateString('es-ES') + ' ' + d.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
+    }
+
+    // ================================================================
+    // NAVEGACIÓN - Dashboard por defecto
+    // ================================================================
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        const page = this.dataset.page;
+        document.querySelectorAll('.page-section').forEach(s => s.style.display = 'none');
+        const target = document.getElementById('page-' + page);
+        if (target) target.style.display = 'block';
+        if (page === 'nueva-solicitud') {
+          cargarDatosNuevaSolicitud();
+        } else if (page === 'solicitudes') {
+          cargarSolicitudes();
+        } else if (page === 'dashboard') {
+          cargarDashboard();
+        } else if (page === 'ordenes') {
+          cargarOrdenes();
+        } else if (page === 'disponibilidad') {
+          cargarUnidadesParaBaja();
+          cargarCalendario();
+          cargarHistorico();
+        } else if (page === 'preventivo') {
+          ejecutarRevisionPreventiva();
+        }
+      });
+    });
+
+    function navegarA(page) {
+      document.querySelector(`.sidebar .nav-link[data-page="${page}"]`).click();
+    }
+
+    // Cargar dashboard al inicio
+    window.onload = function() {
+      const hoy = new Date();
+      const mesAtras = new Date(hoy);
+      mesAtras.setMonth(mesAtras.getMonth() - 1);
+      document.getElementById('dash-fecha-inicio').value = mesAtras.toISOString().split('T')[0];
+      document.getElementById('dash-fecha-fin').value = hoy.toISOString().split('T')[0];
+      document.querySelector('.sidebar .nav-link[data-page="dashboard"]').click();
+    };
+
+    // ================================================================
+    // NUEVA SOLICITUD - Cargar datos (listas independientes)
+    // ================================================================
+    function cargarDatosNuevaSolicitud() {
+      google.script.run.withSuccessHandler(function(data) {
+        unidadesList = data;
+        const selPlaca = document.getElementById('ns-placa');
+        selPlaca.innerHTML = '<option value="">-- Seleccionar --</option>';
+        data.forEach(u => {
+          selPlaca.innerHTML += `<option value="${u.placa}">${u.placa} - ${u.modelo}</option>`;
+        });
+      }).obtenerUnidades();
+
+      google.script.run.withSuccessHandler(function(data) {
+        const selConductor = document.getElementById('ns-conductor');
+        selConductor.innerHTML = '<option value="">-- Seleccionar --</option>';
+        data.conductores.forEach(c => {
+          selConductor.innerHTML += `<option value="${c}">${c}</option>`;
+        });
+        const selRuta = document.getElementById('ns-ruta');
+        selRuta.innerHTML = '<option value="">-- Seleccionar --</option>';
+        data.rutas.forEach(r => {
+          selRuta.innerHTML += `<option value="${r}">${r}</option>`;
+        });
+      }).obtenerConductoresYRutasIndependientes();
+    }
+
+    // ================================================================
+    // NUEVA SOLICITUD - Subida de archivos
+    // ================================================================
+    function prepararSubidaArchivo() {
+      const input = document.getElementById('file-input');
+      const status = document.getElementById('file-status');
+      const hidden = document.getElementById('ns-foto');
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['jpg','jpeg','png','gif','webp'].includes(ext)) {
+          status.innerHTML = '<span class="text-danger">❌ Formato no soportado. Solo imágenes.</span>';
+          input.value = '';
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          status.innerHTML = '<span class="text-danger">❌ El archivo excede 5MB.</span>';
+          input.value = '';
+          return;
+        }
+        archivoSeleccionado = file;
+        status.innerHTML = `<span class="text-success">✅ ${file.name} (${(file.size/1024).toFixed(0)} KB)</span>`;
+        hidden.value = 'PENDIENTE_SUBIR';
+      } else {
+        archivoSeleccionado = null;
+        status.innerHTML = '';
+        hidden.value = '';
+      }
+    }
+
+    function guardarSolicitud() {
+      const placa = document.getElementById('ns-placa').value;
+      const conductor = document.getElementById('ns-conductor').value;
+      const ruta = document.getElementById('ns-ruta').value;
+      const horas = document.getElementById('ns-horas').value || 0;
+      const km = document.getElementById('ns-km').value;
+      const urgencia = document.getElementById('ns-urgencia').value;
+      const area = document.getElementById('ns-area').value;
+      const desc = document.getElementById('ns-descripcion').value.trim();
+      const foto = document.getElementById('ns-foto').value;
+
+      if (!placa || !conductor || !km || !desc) {
+        alert('Completa todos los campos obligatorios (*)');
+        return;
+      }
+      document.getElementById('loader').style.display = 'flex';
+
+      google.script.run.withSuccessHandler(function(result) {
+        if (archivoSeleccionado) {
+          const formData = new FormData();
+          formData.append('file', archivoSeleccionado);
+          formData.append('ticketId', result.id);
+          google.script.run.withSuccessHandler(function(updateResult) {
+            document.getElementById('loader').style.display = 'none';
+            alert('Solicitud creada: ' + result.id + '\nFoto subida correctamente.');
+            limpiarFormularioSolicitud();
+            navegarA('solicitudes');
+            cargarSolicitudes();
+          }).subirFotoSolicitud(formData);
+        } else {
+          document.getElementById('loader').style.display = 'none';
+          alert('Solicitud creada: ' + result.id);
+          limpiarFormularioSolicitud();
+          navegarA('solicitudes');
+          cargarSolicitudes();
+        }
+      }).crearSolicitudCompleta(placa, conductor, ruta, Number(horas), Number(km), urgencia, area, desc, foto);
+    }
+
+    function limpiarFormularioSolicitud() {
+      document.getElementById('ns-placa').value = '';
+      document.getElementById('ns-conductor').value = '';
+      document.getElementById('ns-ruta').value = '';
+      document.getElementById('ns-horas').value = '';
+      document.getElementById('ns-km').value = '';
+      document.getElementById('ns-descripcion').value = '';
+      document.getElementById('ns-foto').value = '';
+      document.getElementById('file-input').value = '';
+      document.getElementById('file-status').innerHTML = '';
+      archivoSeleccionado = null;
+    }
+
+    // ================================================================
+    // SOLICITUDES (BANDEJA) - CON FILTROS Y COLUMNA RUTA
+    // ================================================================
+    function cargarSolicitudes() {
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(data) {
+        document.getElementById('loader').style.display = 'none';
+        solicitudesData = data;
+        renderSolicitudes(data);
+      }).obtenerSolicitudes();
+    }
+
+    function renderSolicitudes(data) {
+      let h = '';
+      let filtered = data;
+
+      if (filtroActual !== 'all') {
+        filtered = filtered.filter(s => s.estado === filtroActual);
+      }
+      if (filtroAreaActual !== 'all') {
+        filtered = filtered.filter(s => s.area === filtroAreaActual);
+      }
+
+      if (filtered.length === 0) {
+        document.getElementById('tabla-solicitudes').innerHTML = '<tr><td colspan="9" class="text-center text-muted">No hay solicitudes con estos filtros</td></tr>';
+        return;
+      }
+
+      filtered.forEach(s => {
+        const bgUrg = s.urgencia === 'ALTA' ? 'danger' : (s.urgencia === 'MEDIA' ? 'warning text-dark' : 'success');
+        const estadoClass = 'estado-' + s.estado.replace(' ', '_');
+        const areaClass = s.area || 'MECANICA';
+        h += `<tr>
+          <td><b>${s.id}</b></td>
+          <td><small>${formatoFecha(s.fecha)}</small></td>
+          <td><b>${s.placa}</b></td>
+          <td>${s.conductor || ''}</td>
+          <td>${s.ruta || ''}</td>
+          <td><span class="badge bg-${bgUrg}">${s.urgencia}</span></td>
+          <td><span class="badge badge-area ${areaClass}">${s.area || 'MECANICA'}</span></td>
+          <td><span class="estado-badge ${estadoClass}">${s.estado}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline-secondary" onclick="verDetalleTicket('${s.id}')" title="Ver detalle"><i class="bi bi-eye"></i></button>
+            ${s.foto ? `<a href="${s.foto}" target="_blank" class="btn btn-sm btn-outline-primary" title="Ver foto"><i class="bi bi-image"></i></a>` : ''}
+            ${s.estado !== 'CERRADO' && !s.id_orden ? `<button class="btn btn-sm btn-success" onclick="abrirModalRevisarDesdeLista('${s.id}')" title="Crear orden"><i class="bi bi-plus-circle"></i></button>` : ''}
+          </td>
+        </tr>`;
+      });
+      document.getElementById('tabla-solicitudes').innerHTML = h;
+    }
+
+    function filtrarSolicitudes(filtro) {
+      filtroActual = filtro;
+      document.querySelectorAll('.filter-group .btn-filter[data-filter]').forEach(b => b.classList.remove('active'));
+      document.querySelector(`.filter-group .btn-filter[data-filter="${filtro}"]`)?.classList.add('active');
+      renderSolicitudes(solicitudesData);
+    }
+
+    function filtrarSolicitudesArea(filtro) {
+      filtroAreaActual = filtro;
+      document.querySelectorAll('.filter-group .btn-filter[data-filter-area]').forEach(b => b.classList.remove('active'));
+      document.querySelector(`.filter-group .btn-filter[data-filter-area="${filtro}"]`)?.classList.add('active');
+      renderSolicitudes(solicitudesData);
+    }
+
+    // ================================================================
+    // DETALLE Y REVISAR SOLICITUD
+    // ================================================================
+    function verDetalleTicket(id) {
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(t) {
+        document.getElementById('loader').style.display = 'none';
+        currentTicketId = t.id;
+        document.getElementById('mt_id').innerText = t.id;
+        document.getElementById('mt_placa').innerText = t.placa;
+        document.getElementById('mt_falla').innerText = t.descripcion || 'Sin descripción';
+        document.getElementById('mt_fecha').innerText = formatoFecha(t.fecha);
+        document.getElementById('mt_antiguedad').innerText = t.antiguedad || '0m';
+        document.getElementById('mt_conductor').innerText = t.conductor || '-';
+        document.getElementById('mt_ruta').innerText = t.ruta || '-';
+        document.getElementById('mt_horas').innerText = t.horas || '0';
+        document.getElementById('mt_estado').innerText = t.estado || 'NUEVA';
+        document.getElementById('mt_estado').className = 'estado-badge estado-' + (t.estado || 'NUEVA').replace(' ', '_');
+        document.getElementById('mt_id_orden').innerText = t.id_orden || '-';
+
+        const areaBadge = document.getElementById('mt_area_badge');
+        const area = t.area || 'MECANICA';
+        areaBadge.innerText = area;
+        areaBadge.className = 'badge badge-area ' + area;
+
+        const u = document.getElementById('mt_urgencia');
+        u.innerText = t.urgencia || 'MEDIA';
+        u.className = 'badge mt-2 bg-' + (t.urgencia === 'ALTA' ? 'danger' : (t.urgencia === 'MEDIA' ? 'warning text-dark' : 'success'));
+
+        const fotoLink = document.getElementById('mt_foto_link');
+        if (t.foto && t.foto !== '') {
+          fotoLink.href = t.foto;
+          fotoLink.style.display = 'inline';
+          fotoLink.innerText = 'Ver foto';
+        } else {
+          fotoLink.style.display = 'none';
+        }
+
+        const btn = document.getElementById('btn-crear-orden');
+        if (t.id_orden || t.estado === 'CERRADO') {
+          btn.style.display = 'none';
+        } else {
+          btn.style.display = 'block';
+          btn.innerText = (t.estado === 'REVISADA') ? '📝 Crear Orden' : '🔍 Revisar y Crear Orden';
+        }
+        modalTicket.show();
+      }).obtenerDetalleTicket(id);
+    }
+
+    function abrirModalRevisar() {
+      modalTicket.hide();
+      prepararModalRevisar(currentTicketId);
+    }
+
+    function abrirModalRevisarDesdeLista(id) {
+      currentTicketId = id;
+      prepararModalRevisar(id);
+    }
+
+    function prepararModalRevisar(idSolicitud) {
+      const sol = solicitudesData.find(s => s.id === idSolicitud);
+      if (!sol) return;
+      document.getElementById('rev_id_solicitud').value = idSolicitud;
+      document.getElementById('rev_diagnostico').value = sol.descripcion || '';
+      document.getElementById('rev_area').value = sol.area || 'MECANICA';
+
+      google.script.run.withSuccessHandler(function(tec) {
+        const sel = document.getElementById('rev_tecnico');
+        sel.innerHTML = '<option value="">-- Seleccionar --</option>';
+        tec.forEach(t => {
+          sel.innerHTML += `<option value="${t.id}">${t.nombre} (${t.especialidad || 'General'})</option>`;
+        });
+        modalRevisar.show();
+      }).obtenerTecnicosActivos();
+    }
+
+    function confirmarRevisarYCrearOrden() {
+      const idSolicitud = document.getElementById('rev_id_solicitud').value;
+      const diagnostico = document.getElementById('rev_diagnostico').value.trim();
+      const area = document.getElementById('rev_area').value;
+      const tipoTaller = document.getElementById('rev_tipo_taller').value;
+      const idTecnico = document.getElementById('rev_tecnico').value;
+
+      if (!diagnostico) { alert('El diagnóstico es obligatorio.'); return; }
+      if (!idTecnico) { alert('Selecciona un técnico.'); return; }
+
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(result) {
+        document.getElementById('loader').style.display = 'none';
+        modalRevisar.hide();
+        alert('Orden creada: ' + result.idOrden);
+        cargarSolicitudes();
+        cargarOrdenes();
+        modalTicket.hide();
+      }).crearOrdenDesdeSolicitudConArea(idSolicitud, diagnostico, area, tipoTaller, idTecnico);
+    }
+
+    // ================================================================
+    // DASHBOARD - con filtros de fecha y métricas avanzadas
+    // ================================================================
+    function cargarDashboard() {
+      const fechaInicio = document.getElementById('dash-fecha-inicio').value;
+      const fechaFin = document.getElementById('dash-fecha-fin').value;
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(d) {
+        document.getElementById('loader').style.display = 'none';
+        // Métricas básicas
+        document.getElementById('d-total').innerText = d.total || 0;
+        document.getElementById('d-taller').innerText = d.enTaller || 0;
+        document.getElementById('d-disponibles').innerText = d.disponibles || 0;
+        document.getElementById('d-preventivo').innerText = d.preventivos || 0;
+        // Métricas avanzadas
+        document.getElementById('d-mtbf').innerText = d.mtbf !== null ? d.mtbf.toFixed(1) : 'Sin datos';
+        document.getElementById('d-mttr').innerText = d.mttr !== null ? d.mttr.toFixed(1) : 'Sin datos';
+        document.getElementById('d-disponibilidad').innerText = d.disponibilidad !== null ? (d.disponibilidad * 100).toFixed(1) + '%' : 'Sin datos';
+        // Lista de tickets
+        renderTicketsDash(d.tickets || []);
+        // Gráficos
+        renderGraficos(d);
+      }).obtenerMetricasDashboard(fechaInicio, fechaFin);
+    }
+
+    function renderTicketsDash(arr) {
+      let h = '';
+      arr.slice(0, 10).forEach(t => {
+        const bg = t.urgencia === 'ALTA' ? 'bg-danger' : (t.urgencia === 'MEDIA' ? 'bg-warning text-dark' : 'bg-success');
+        h += `<div class="ticket-item" onclick="navegarASolicitud('${t.id}')">
+          <div class="d-flex justify-content-between"><span class="badge ${bg}">${t.id}</span><span class="text-muted small">${t.antiguedad||'0m'}</span></div>
+          <div class="fw-bold">${t.placa}</div>
+          <div class="small text-truncate text-muted">${t.falla||'Sin descripción'}</div>
+        </div>`;
+      });
+      document.getElementById('lista-tickets-dash').innerHTML = h || '<p class="text-muted small">Sin solicitudes activas</p>';
+    }
+
+    function navegarASolicitud(id) {
+      navegarA('solicitudes');
+      setTimeout(() => verDetalleTicket(id), 500);
+    }
+
+    function renderGraficos(d) {
+      // Gráfico 1: Estado de Unidades
+      const ctx1 = document.getElementById('chartEstadoUnidades').getContext('2d');
+      if (chartEstadoUnidades) chartEstadoUnidades.destroy();
+      chartEstadoUnidades = new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+          labels: ['DISPONIBLE', 'NO DISPONIBLE', 'PREVENTIVO'],
+          datasets: [{
+            data: [d.disponibles || 0, d.enTaller || 0, d.preventivos || 0],
+            backgroundColor: ['#22c55e', '#ef4444', '#f59e0b'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 9 } } },
+            onClick: function(e) { navegarA('disponibilidad'); }
+          }
+        }
+      });
+
+      // Gráfico 2: Solicitudes por urgencia
+      const ctx2 = document.getElementById('chartUrgencia').getContext('2d');
+      if (chartUrgencia) chartUrgencia.destroy();
+      const urgData = d.urgencias || { ALTA: 0, MEDIA: 0, BAJA: 0 };
+      chartUrgencia = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: ['ALTA', 'MEDIA', 'BAJA'],
+          datasets: [{
+            label: 'Solicitudes',
+            data: [urgData.ALTA || 0, urgData.MEDIA || 0, urgData.BAJA || 0],
+            backgroundColor: ['#ef4444', '#f59e0b', '#22c55e'],
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            onClick: function(e) { navegarA('solicitudes'); }
+          },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+
+      // Gráfico 3: Órdenes por estado
+      const ctx3 = document.getElementById('chartOrdenes').getContext('2d');
+      if (chartOrdenes) chartOrdenes.destroy();
+      const ordData = d.estadosOrdenes || { ABIERTA: 0, EN_PROGRESO: 0, COMPLETADA: 0, EN_ESPERA: 0 };
+      chartOrdenes = new Chart(ctx3, {
+        type: 'bar',
+        data: {
+          labels: ['ABIERTA', 'EN_PROGRESO', 'EN_ESPERA', 'COMPLETADA'],
+          datasets: [{
+            label: 'Órdenes',
+            data: [ordData.ABIERTA || 0, ordData.EN_PROGRESO || 0, ordData.EN_ESPERA || 0, ordData.COMPLETADA || 0],
+            backgroundColor: ['#fbbf24', '#3b82f6', '#8b5cf6', '#22c55e'],
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            onClick: function(e) { navegarA('ordenes'); }
+          },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+    }
+
+    // ================================================================
+    // ÓRDENES
+    // ================================================================
+    function cargarOrdenes() {
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(data) {
+        document.getElementById('loader').style.display = 'none';
+        ordenesData = data;
+        let h = '';
+        data.forEach(o => {
+          const cls = 'estado-' + o.estado;
+          h += `<tr>
+            <td><b>${o.id}</b></td>
+            <td>${o.placa || '-'}</td>
+            <td><small>${o.diagnostico_inicial || ''}</small></td>
+            <td><span class="estado-badge ${cls}">${o.estado || 'ABIERTA'}</span></td>
+            <td>${o.tecnico_actual || '-'}</td>
+            <td>
+              ${o.estado !== 'COMPLETADA' && o.estado !== 'CERRADO' ?
+                `<button class="btn btn-sm btn-success me-1" onclick="iniciarSesion('${o.id}')" title="Iniciar"><i class="bi bi-play-fill"></i></button>` : ''}
+              ${o.sesion_activa ?
+                `<button class="btn btn-sm btn-warning me-1" onclick="finalizarSesion('${o.sesion_activa}')" title="Finalizar"><i class="bi bi-stop-fill"></i></button>` : ''}
+              <button class="btn btn-sm btn-outline-secondary" onclick="alert('Detalle: '+'${o.id}')"><i class="bi bi-eye"></i></button>
+            </td>
+          </tr>`;
+        });
+        document.getElementById('tabla-ordenes').innerHTML = h || '<tr><td colspan="6" class="text-center text-muted">No hay órdenes</td></tr>';
+      }).obtenerOrdenes();
+    }
+
+    function iniciarSesion(idOrden) {
+      const orden = ordenesData.find(o => o.id === idOrden);
+      if (!orden || !orden.id_tecnico_actual) {
+        alert('Esta orden no tiene técnico asignado.');
+        return;
+      }
+      document.getElementById('is_id_orden').value = idOrden;
+      document.getElementById('is_id_tecnico').value = orden.id_tecnico_actual;
+      document.getElementById('is_descripcion').value = '';
+      modalIniciarSesion.show();
+    }
+
+    function confirmarIniciarSesion() {
+      const idOrden = document.getElementById('is_id_orden').value;
+      const idTec = document.getElementById('is_id_tecnico').value;
+      const desc = document.getElementById('is_descripcion').value;
+      if (!idOrden || !idTec) return;
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(r) {
+        document.getElementById('loader').style.display = 'none';
+        modalIniciarSesion.hide();
+        alert('Sesión iniciada. ID: ' + r.idRegistro);
+        cargarOrdenes();
+      }).iniciarSesionTrabajo(idOrden, idTec, desc);
+    }
+
+    function finalizarSesion(idRegistro) {
+      currentRegistroId = idRegistro;
+      document.getElementById('fs_id_registro').value = idRegistro;
+      document.getElementById('fs_tiempo_transcurrido').innerText = 'Calculando...';
+      modalFinalizarSesion.show();
+      google.script.run.withSuccessHandler(function(tiempo) {
+        document.getElementById('fs_tiempo_transcurrido').innerText = tiempo || '--';
+      }).calcularTiempoSesion(idRegistro);
+    }
+
+    function confirmarFinalizarSesion() {
+      const idReg = document.getElementById('fs_id_registro').value;
+      if (!idReg) return;
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(r) {
+        document.getElementById('loader').style.display = 'none';
+        modalFinalizarSesion.hide();
+        alert('Sesión finalizada. Horas: ' + (r.horas || '0') + 'h');
+        cargarOrdenes();
+      }).finalizarSesionTrabajo(idReg);
+    }
+
+    // ================================================================
+    // DISPONIBILIDAD
+    // ================================================================
+    function cargarUnidadesParaBaja() {
+      google.script.run.withSuccessHandler(function(data) {
+        const sel = document.getElementById('baja-placa');
+        sel.innerHTML = '<option value="">-- Seleccionar --</option>';
+        data.forEach(u => {
+          sel.innerHTML += `<option value="${u.placa}">${u.placa}</option>`;
+        });
+      }).obtenerUnidades();
+    }
+
+    function registrarBaja() {
+      const placa = document.getElementById('baja-placa').value;
+      const horas = document.getElementById('baja-horas').value || 0;
+      const ubic = document.getElementById('baja-ubicacion').value || 'Taller';
+      const mot = document.getElementById('baja-motivo').value || 'Mantenimiento';
+      if (!placa) { alert('Selecciona una placa'); return; }
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function() {
+        document.getElementById('loader').style.display = 'none';
+        alert('Baja registrada');
+        cargarCalendario();
+        cargarHistorico();
+      }).registrarBaja(placa, Number(horas), ubic, mot);
+    }
+
+    function cargarCalendario() {
+      const mes = parseInt(document.getElementById('sel-mes').value) + 1;
+      const anio = parseInt(document.getElementById('sel-ano').value) || 2026;
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(data) {
+        document.getElementById('loader').style.display = 'none';
+        renderCalendario(data, mes, anio);
+      }).obtenerDisponibilidadMes(mes, anio);
+    }
+
+    function renderCalendario(data, mes, anio) {
+      const container = document.getElementById('calendario-container');
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p class="text-muted">No hay datos de disponibilidad.</p>';
+        return;
+      }
+      const dias = new Date(anio, mes, 0).getDate();
+      const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+      let html = `
+        <div style="overflow-x:auto;">
+          <div class="calendario-grid">
+            <div class="calendario-header">Placa</div>
+            ${diasSemana.map(d => `<div class="calendario-header">${d}</div>`).join('')}
+            ${data.map(item => `
+              <div class="calendario-fila">
+                <div class="placa-cell" title="${item.placa}">${item.placa}</div>
+                ${Array.from({length:dias}, (_, i) => {
+                  const d = i + 1;
+                  const fechaStr = anio + '-' + String(mes).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+                  const disp = item.diasDisponibles && item.diasDisponibles.includes(fechaStr);
+                  const cls = disp ? 'disponible' : 'no-disponible';
+                  const titulo = disp ? 'Disponible' : 'No disponible';
+                  return `<div><div class="calendario-dia ${cls}" title="${titulo}">${d}</div></div>`;
+                }).join('')}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      container.innerHTML = html;
+    }
+
+    function cargarHistorico() {
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(data) {
+        document.getElementById('loader').style.display = 'none';
+        let h = '';
+        data.forEach(item => {
+          h += `<tr>
+            <td>${formatoFecha(item.fecha)}</td>
+            <td><b>${item.placa}</b></td>
+            <td>${item.horas || 0}</td>
+            <td>${item.motivo || '-'}</td>
+          </tr>`;
+        });
+        document.getElementById('tabla-historico').innerHTML = h || '<tr><td colspan="4" class="text-center text-muted">No hay registros</td></tr>';
+      }).obtenerHistoricoDisponibilidad();
+    }
+
+    // ================================================================
+    // PREVENTIVO
+    // ================================================================
+    function ejecutarRevisionPreventiva() {
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(result) {
+        document.getElementById('loader').style.display = 'none';
+        const div = document.getElementById('preventivo-resultados');
+        if (result.ordenesCreadas && result.ordenesCreadas.length > 0) {
+          let html = '<div class="alert alert-success"><b>Órdenes preventivas creadas:</b><ul>';
+          result.ordenesCreadas.forEach(o => {
+            html += `<li>${o.idOrden} - ${o.placa} - ${o.tipo}</li>`;
+          });
+          html += '</ul></div>';
+          div.innerHTML = html;
+        } else {
+          div.innerHTML = '<div class="alert alert-info">No se necesita mantenimiento preventivo en este momento.</div>';
+        }
+        if (document.getElementById('page-dashboard').style.display !== 'none') cargarDashboard();
+      }).ejecutarPreventivoAutomatico();
+    }
+
+    console.log('Planificador Taller V3.0 cargado');
+  </script>
+</body>
+</html>
