@@ -1,0 +1,27 @@
+<div id="page-nueva-solicitud" class="page-section" style="display:none;">
+  <div class="card-pro">
+    <h5 class="fw-bold mb-3"><i class="bi bi-plus-circle me-2 text-danger"></i>Registrar Solicitud</h5>
+    <form id="form-solicitud" onsubmit="return false;">
+      <div class="row g-3">
+        <div class="col-12"><label class="form-label fw-bold small">PLACA *</label><select id="ns-placa" class="form-select" required><option value="">-- Seleccionar --</option></select></div>
+        <div class="col-12"><label class="form-label fw-bold small">CONDUCTOR (NOMBRE) *</label><select id="ns-conductor" class="form-select" required><option value="">-- Seleccionar --</option></select></div>
+        <div class="col-12"><label class="form-label fw-bold small">RUTA</label><select id="ns-ruta" class="form-select"><option value="">-- Seleccionar --</option></select></div>
+        <div class="col-6"><label class="form-label fw-bold small">HORAS THERMO</label><input type="number" id="ns-horas" class="form-control" placeholder="0" step="0.5"></div>
+        <div class="col-6"><label class="form-label fw-bold small">KM REPORTE *</label><input type="number" id="ns-km" class="form-control" placeholder="0" required></div>
+        <div class="col-6"><label class="form-label fw-bold small">URGENCIA *</label><select id="ns-urgencia" class="form-select" required><option value="ALTA">🔴 ALTA</option><option value="MEDIA" selected>🟡 MEDIA</option><option value="BAJA">🟢 BAJA</option></select></div>
+        <div class="col-6"><label class="form-label fw-bold small">ÁREA *</label><select id="ns-area" class="form-select" required><option value="MECANICA">🔧 MECANICA</option><option value="CARROCERIA">🚗 CARROCERIA</option><option value="ELECTRICO">⚡ ELECTRICO</option><option value="URF">🧊 URF</option></select></div>
+        <div class="col-12"><label class="form-label fw-bold small">DESCRIPCIÓN *</label><textarea id="ns-descripcion" class="form-control" rows="3" placeholder="Describa el problema..." required></textarea></div>
+        <div class="col-12">
+          <label class="form-label fw-bold small">FOTO</label>
+          <div class="file-upload-wrapper">
+            <button class="btn btn-outline-secondary w-100" onclick="document.getElementById('file-input').click()"><i class="bi bi-camera me-2"></i>Tomar foto / Seleccionar</button>
+            <input type="file" id="file-input" accept="image/*" capture="environment" onchange="prepararSubidaArchivo()">
+          </div>
+          <div id="file-status" class="mt-1"></div>
+          <input type="hidden" id="ns-foto" value="">
+        </div>
+        <div class="col-12"><button class="btn btn-red w-100 py-3" onclick="guardarSolicitud()"><i class="bi bi-save me-2"></i>Guardar Solicitud</button></div>
+      </div>
+    </form>
+  </div>
+</div>
