@@ -1,0 +1,69 @@
+<!-- Modal Detalle Solicitud -->
+<div class="modal fade" id="modalTicket" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-bold text-danger" id="mt_id"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="text-center mb-3"><h1 class="display-4 fw-bold m-0" id="mt_placa"></h1><span class="badge" id="mt_urgencia"></span><span class="badge badge-area" id="mt_area_badge"></span></div>
+        <div class="bg-light p-3 rounded-3 mb-3"><label class="small text-muted fw-bold d-block mb-1">REPORTE:</label><p id="mt_falla" class="m-0 fw-bold"></p></div>
+        <div class="row small"><div class="col-6"><small class="text-muted d-block">Fecha:</small><b id="mt_fecha"></b></div><div class="col-6"><small class="text-muted d-block">Antigüedad:</small><b id="mt_antiguedad"></b></div></div>
+        <div class="mt-2"><small class="text-muted d-block">Conductor:</small><b id="mt_conductor"></b></div>
+        <div class="mt-1"><small class="text-muted d-block">Ruta:</small><b id="mt_ruta"></b></div>
+        <div class="mt-2"><small class="text-muted d-block">Horas Thermo:</small><b id="mt_horas">0</b></div>
+        <div class="mt-2"><small class="text-muted d-block">Foto:</small><a href="#" id="mt_foto_link" target="_blank" class="text-primary">Ver foto</a></div>
+        <div class="mt-3"><small class="text-muted d-block">Estado:</small><span id="mt_estado" class="estado-badge estado-NUEVA">NUEVA</span></div>
+        <div class="mt-2"><small class="text-muted d-block">Orden vinculada:</small><b id="mt_id_orden">-</b></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success w-100" id="btn-crear-orden" onclick="abrirModalRevisar()"><i class="bi bi-pencil-square me-2"></i>Revisar y Crear Orden</button>
+        <button class="btn btn-light w-100 mt-1" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Revisar y Crear Orden -->
+<div class="modal fade" id="modalRevisar" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-bold text-danger">Revisar Solicitud</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="rev_id_solicitud">
+        <div class="mb-3"><label class="form-label fw-bold small">Diagnóstico Inicial *</label><textarea id="rev_diagnostico" class="form-control" rows="3" placeholder="Describe el diagnóstico..."></textarea></div>
+        <div class="mb-3"><label class="form-label fw-bold small">Redireccionar Área</label><select id="rev_area" class="form-select"><option value="MECANICA">🔧 MECANICA</option><option value="CARROCERIA">🚗 CARROCERIA</option><option value="ELECTRICO">⚡ ELECTRICO</option><option value="URF">🧊 URF</option></select></div>
+        <div class="mb-3"><label class="form-label fw-bold small">Tipo Taller</label><select id="rev_tipo_taller" class="form-select"><option value="INTERNO">INTERNO</option><option value="EXTERNO">EXTERNO</option></select></div>
+        <div class="mb-3"><label class="form-label fw-bold small">Asignar Técnico *</label><select id="rev_tecnico" class="form-select"><option value="">-- Seleccionar --</option></select></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-success" onclick="confirmarRevisarYCrearOrden()"><i class="bi bi-check2-circle me-2"></i>Crear Orden</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Iniciar Sesión -->
+<div class="modal fade" id="modalIniciarSesion" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-bold text-danger">Iniciar Sesión</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="is_id_orden"><input type="hidden" id="is_id_tecnico">
+        <div class="mb-3"><label class="form-label fw-bold small">Descripción</label><textarea id="is_descripcion" class="form-control" rows="3" placeholder="Ej: Diagnóstico, cambio de frenos..."></textarea></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-success" onclick="confirmarIniciarSesion()"><i class="bi bi-play-fill me-2"></i>Iniciar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Finalizar Sesión -->
+<div class="modal fade" id="modalFinalizarSesion" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-bold text-success">Finalizar Sesión</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="fs_id_registro">
+        <p class="mb-2">¿Finalizar esta sesión?</p>
+        <div class="bg-light p-3 rounded-3"><small class="text-muted d-block">Tiempo transcurrido:</small><b id="fs_tiempo_transcurrido">--</b></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-success" onclick="confirmarFinalizarSesion()"><i class="bi bi-check2-circle me-2"></i>Finalizar</button></div>
+    </div>
+  </div>
+</div>
