@@ -1,0 +1,36 @@
+<div id="page-disponibilidad" class="page-section" style="display:none;">
+  <div class="card-pro">
+    <h5 class="fw-bold mb-3"><i class="bi bi-calendar2-week me-2 text-danger"></i>Calendario de Disponibilidad</h5>
+    <div class="row g-2 mb-3">
+      <div class="col-6"><label class="form-label fw-bold small">Mes</label><select id="sel-mes" class="form-select" onchange="cargarCalendario()"><option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option></select></div>
+      <div class="col-4"><label class="form-label fw-bold small">Año</label><input type="number" id="sel-ano" class="form-control" value="2026" onchange="cargarCalendario()"></div>
+      <div class="col-2 d-flex align-items-end"><button class="btn btn-red w-100" onclick="cargarCalendario()"><i class="bi bi-calendar2-week"></i></button></div>
+    </div>
+    <div id="calendario-container"></div>
+    <div class="calendario-leyenda">
+      <span><span class="dot dot-disponible"></span> Disponible</span>
+      <span><span class="dot dot-no-disponible"></span> No disponible</span>
+      <span><span class="dot dot-sin-registro"></span> Sin registro</span>
+    </div>
+  </div>
+  <div class="card-pro">
+    <h5 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>Registrar Unidad NO Disponible</h5>
+    <div class="row g-2">
+      <div class="col-12"><label class="form-label fw-bold small">Placa</label><select id="baja-placa" class="form-select"></select></div>
+      <div class="col-6"><label class="form-label fw-bold small">Horas Termo</label><input type="number" id="baja-horas" class="form-control" value="0"></div>
+      <div class="col-6"><label class="form-label fw-bold small">Ubicación</label><input type="text" id="baja-ubicacion" class="form-control" placeholder="Taller"></div>
+      <div class="col-9"><label class="form-label fw-bold small">Motivo</label><input type="text" id="baja-motivo" class="form-control" placeholder="Mantenimiento"></div>
+      <div class="col-3 d-flex align-items-end"><button class="btn btn-danger w-100" onclick="registrarBaja()"><i class="bi bi-plus-circle"></i></button></div>
+    </div>
+  </div>
+  <div class="card-pro">
+    <h5 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>Historial</h5>
+    <div class="historico-container">
+      <table class="table table-hover align-middle table-sm">
+        <thead class="table-light"><tr><th>Fecha</th><th>Placa</th><th>Horas</th><th>Motivo</th></tr></thead>
+        <tbody id="tabla-historico"></tbody>
+      </table>
+    </div>
+    <button class="btn btn-outline-secondary btn-sm mt-2" onclick="cargarHistorico()"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+  </div>
+</div>
