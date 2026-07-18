@@ -6,12 +6,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* ===== TODOS TUS ESTILOS EXISTENTES (copia y pega aquí los que ya tenías) ===== */
-    /* (He omitido los estilos por brevedad, pero debes mantener los que ya tenías) */
     :root { --red: #E31D2B; --dark: #1e293b; --bg: #f1f5f9; --font-size-base: 16px; }
     * { box-sizing: border-box; }
     body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; color: #1e293b; font-size: var(--font-size-base); overflow-x: hidden; padding-bottom: 80px; }
@@ -143,13 +142,20 @@
     </nav>
   </div>
 
-  <!-- CONTENEDOR PRINCIPAL -->
-  <div class="main" id="main-container"></div>
+  <!-- CONTENEDOR PRINCIPAL donde se cargarán los módulos -->
+  <div class="main" id="main-container">
+    <!-- Aquí se inyectarán las secciones y modales -->
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // ================================================================
-    // CARGA DE MÓDULOS CON MANEJO DE ERRORES
+    // CONFIGURACIÓN - URL DE APPS SCRIPT (ACTUALIZADA)
+    // ================================================================
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzfelsrZttFCzQKFQdcJSL507IXy0xf3tS9nM64CjwuI5wW66BiznuuZOxV3ZJ6nWMl/exec';
+
+    // ================================================================
+    // CARGA DE MÓDULOS (fetch)
     // ================================================================
     const MODULES = [
       'dashboard',
@@ -164,66 +170,41 @@
     async function cargarModulos() {
       const container = document.getElementById('main-container');
       try {
-        const results = await Promise.allSettled(
-          MODULES.map(nombre =>
-            fetch(`./${nombre}.html`)
-              .then(res => {
-                if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
-                return res.text();
-              })
-          )
+        const promises = MODULES.map(nombre =>
+          fetch(`./${nombre}.html`).then(res => {
+            if (!res.ok) throw new Error(`Error al cargar ${nombre}.html`);
+            return res.text();
+          })
         );
-
-        let allOk = true;
-        results.forEach((result, index) => {
-          const nombre = MODULES[index];
-          if (result.status === 'fulfilled') {
-            container.insertAdjacentHTML('beforeend', result.value);
-            console.log(`✅ ${nombre}.html cargado`);
-          } else {
-            allOk = false;
-            console.error(`❌ Error al cargar ${nombre}.html:`, result.reason);
-            container.insertAdjacentHTML('beforeend', `
-              <div class="alert alert-warning m-2">
-                <i class="bi bi-exclamation-triangle"></i> 
-                <strong>${nombre}.html</strong> no se pudo cargar: ${result.reason.message}
-              </div>
-            `);
-          }
+        const htmls = await Promise.all(promises);
+        htmls.forEach(html => {
+          container.insertAdjacentHTML('beforeend', html);
         });
-
-        // Solo inicializa si todos los módulos se cargaron bien
-        if (allOk) {
-          inicializarApp();
-        } else {
-          document.getElementById('loader').style.display = 'none';
-        }
+        inicializarApp();
       } catch (error) {
-        console.error('Error general:', error);
+        console.error('Error cargando módulos:', error);
         container.innerHTML = `
           <div class="alert alert-danger m-3">
             <h5>Error al cargar la aplicación</h5>
             <p>${error.message}</p>
+            <p>Verifica que todos los archivos .html estén en la misma carpeta que index.html</p>
           </div>
         `;
-        document.getElementById('loader').style.display = 'none';
       }
     }
 
     // ================================================================
-    // INICIALIZACIÓN (TODO EL CÓDIGO JS CENTRALIZADO)
+    // INICIALIZACIÓN (todo el código JavaScript)
     // ================================================================
     function inicializarApp() {
       // ================================================================
-      // CONFIGURACIÓN - URL de tu endpoint de Apps Script
+      // FUNCIÓN PARA LLAMAR A LA API
       // ================================================================
-      const API_URL = 'https://script.google.com/macros/s/AKfycbwHosLpvfms33jV3Ujhhu7hnzUaTaLZ6HUUvCC_dmZf4euLFZ_-N64gXbvzCgSABLzZ/exec';
-
       function callApi(action, params = {}) {
         return new Promise((resolve, reject) => {
           fetch(API_URL, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action, ...params })
           })
@@ -242,7 +223,7 @@
         formData.append('file', fileBlob);
         return fetch(API_URL, {
           method: 'POST',
-          mode: 'no-cors',
+          mode: 'cors',
           body: formData
         })
         .then(response => response.json())
@@ -386,7 +367,7 @@
               formData.append('file', archivoSeleccionado);
               return fetch(API_URL, {
                 method: 'POST',
-                mode: 'no-cors',
+                mode: 'cors',
                 body: formData
               }).then(res => res.json()).then(() => result);
             }
@@ -838,7 +819,7 @@
       }
 
       // ================================================================
-      // PANTALLA COMPLETA
+      // PANTALLA COMPLETA (FULLSCREEN)
       // ================================================================
       function activarPantallaCompleta() {
         const doc = document.documentElement;
@@ -856,11 +837,11 @@
         document.removeEventListener('click', firstClick);
       }, { once: true });
 
-      console.log('✅ Planificador Taller V3.0 - Modo API con módulos cargado correctamente');
-    } // <-- FIN DE inicializarApp
+      console.log('Planificador Taller V3.0 - Modo API con módulos');
+    }
 
     // ================================================================
-    // INICIAR LA CARGA
+    // INICIAR LA CARGA DE MÓDULOS
     // ================================================================
     document.addEventListener('DOMContentLoaded', function() {
       cargarModulos();
